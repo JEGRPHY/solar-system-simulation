@@ -5,7 +5,7 @@ import time
 
 # Page configuration
 st.set_page_config(
-    page_title="Physics of the Solar System",
+    page_title="Solar System with JEGR",
     page_icon="🌌",
     layout="wide"
 )
