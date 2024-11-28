@@ -4,15 +4,38 @@ import numpy as np
 import time
 
 # Sidebar controls
+st.sidebar.title("Solar System Controls")
 speed_factor = st.sidebar.slider("Speed Factor", 0.1, 5.0, 1.0)
 scale = st.sidebar.slider("Scale", 1, 100, 10)
 zoom = st.sidebar.slider("Zoom Level", 1, 20, 5)
-
-# Time step for motion
 t_step = st.sidebar.slider("Time Step (seconds)", 0.01, 0.5, 0.1)
 
-# Planet data (simplified)
-planets = [
+# Custom Planet Feature
+st.sidebar.header("Add Custom Planet")
+custom_name = st.sidebar.text_input("Planet Name", value="New Planet")
+custom_radius = st.sidebar.slider("Orbit Radius", 0.5, 40.0, 10.0)
+custom_period = st.sidebar.slider("Orbital Period (days)", 1, 10000, 365)
+custom_color = st.sidebar.color_picker("Planet Color", value="#FFFFFF")
+add_planet = st.sidebar.button("Add Planet")
+
+# Store added planets in session state
+if "custom_planets" not in st.session_state:
+    st.session_state.custom_planets = []
+
+if add_planet:
+    st.session_state.custom_planets.append({
+        "name": custom_name,
+        "radius": custom_radius,
+        "period": custom_period,
+        "color": custom_color
+    })
+
+# Time tracking
+if "time" not in st.session_state:
+    st.session_state.time = 0
+
+# Planet data
+default_planets = [
     {"name": "Mercury", "radius": 0.4, "period": 88, "color": "gray"},
     {"name": "Venus", "radius": 0.7, "period": 225, "color": "orange"},
     {"name": "Earth", "radius": 1.0, "period": 365, "color": "blue"},
@@ -23,38 +46,35 @@ planets = [
     {"name": "Neptune", "radius": 30.1, "period": 60190, "color": "darkblue"}
 ]
 
-# Initialize time variable
-if "time" not in st.session_state:
-    st.session_state.time = 0
+# Combine default and custom planets
+planets = default_planets + st.session_state.custom_planets
 
-# Create the plot
+# Create the 3D plot
 fig = go.Figure()
 
 # Add the Sun
 fig.add_trace(go.Scatter3d(
     x=[0], y=[0], z=[0],
     mode='markers',
-    marker=dict(size=10, color='yellow'),
+    marker=dict(size=15, color='yellow'),
     name='Sun'
 ))
 
 # Add planets and their orbits
-planet_positions = []
 for planet in planets:
-    # Calculate position of the planet based on time and orbital period
+    # Calculate the position of the planet based on time and orbital period
     angle = (st.session_state.time / planet["period"]) * 2 * np.pi * speed_factor
     x = planet["radius"] * scale * np.cos(angle)
     y = planet["radius"] * scale * np.sin(angle)
-    z = 0  # Keep the z-axis constant for simplicity
+    z = 0  # Flat 2D plane for simplicity
 
-    planet_positions.append((x, y, z))
-
-    # Orbit (a simple circle)
+    # Orbit (circle)
     orbit_t = np.linspace(0, 2 * np.pi, 100)
     orbit_x = planet["radius"] * scale * np.cos(orbit_t)
     orbit_y = planet["radius"] * scale * np.sin(orbit_t)
     orbit_z = [0] * len(orbit_t)
 
+    # Add orbit path
     fig.add_trace(go.Scatter3d(
         x=orbit_x, y=orbit_y, z=orbit_z,
         mode='lines',
@@ -62,15 +82,15 @@ for planet in planets:
         name=f'{planet["name"]} Orbit'
     ))
 
-    # Planet
+    # Add planet
     fig.add_trace(go.Scatter3d(
         x=[x], y=[y], z=[z],
         mode='markers',
-        marker=dict(size=5, color=planet["color"]),
+        marker=dict(size=8, color=planet["color"]),
         name=planet["name"]
     ))
 
-# Adjust layout
+# Adjust layout for the 3D view
 fig.update_layout(
     scene=dict(
         aspectmode="cube",
@@ -81,9 +101,9 @@ fig.update_layout(
     margin=dict(l=0, r=0, t=0, b=0)
 )
 
-# Display the plot
+# Display the 3D plot
 st.plotly_chart(fig)
 
-# Update time for animation
+# Increment time for animation
 time.sleep(t_step)
-st.session_state.time += t_step * 365  # Increment time in days
+st.session_state.time += t_step * 365  # Simulate time passing in days
