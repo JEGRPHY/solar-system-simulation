@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # Title and Introduction
-st.title("🌌 Physics of the Solar System")
+st.title("🌌Solar System with JEGR")
 st.markdown("""
 Explore the **physics behind the solar system**! 🪐  
 This simulation models the motion of planets around the Sun using principles of **orbital mechanics**.  
